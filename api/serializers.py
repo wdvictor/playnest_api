@@ -1,0 +1,53 @@
+from rest_framework import serializers
+from base.models import Item, Customer, Details
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = '__all__'
+
+
+class DetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Details
+        fields = '__all__'
+
+class CustomerSerializer(serializers.ModelSerializer):
+    details = DetailsSerializer()
+
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+    def create(self, validated_data):
+
+        
+        details_data = validated_data.pop('details')
+        
+        details = Details.objects.create(**details_data)
+        
+        
+        customer = Customer.objects.create(details=details, **validated_data)
+        
+        return customer
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details')
+        details = instance.details
+
+        # Atualiza os campos do Customer
+        instance.name = validated_data.get('name', instance.name)
+        # Adicione outros campos do Customer aqui
+        instance.save()
+
+        # Atualiza os campos do Details
+        details.email = details_data.get('email', details.email)
+        details.birthday = details_data.get('birthday', details.birthday)
+        # Adicione outros campos do Details aqui
+        details.save()
+
+        return instance
+
+
+
