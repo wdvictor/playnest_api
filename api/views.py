@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from base.models import Item, Customer
 from .serializers import ItemSerializer, CustomerSerializer
+from rest_framework import status
 
 
 
@@ -42,12 +43,11 @@ def getAllCustomers(request):
         filter = data.get('filter', None)
         
         if filter == 'name':
-            print('--name')
             customers= Customer.objects.filter(name__icontains=data.get('data', ''))
             serializer = CustomerSerializer(customers, many=True)
             return Response(serializer.data)
-        elif filter == 'email':
-            print('--email')
+        
+        elif filter == 'email':    
             customers = Customer.objects.filter(details__email__icontains=data.get('data', ))
             serializer = CustomerSerializer(customers, many=True)
             return Response(serializer.data)
@@ -55,7 +55,20 @@ def getAllCustomers(request):
         customers = customers.objects.all()
         serializer = CustomerSerializer(customers, many=True)
         return Response(serializer.data)
+    
     except Exception as e:
         logger.error(f'Error at getAllCustomers {str(e)}', exc_info=True)
 
         return Response({"error": "No customers found"}, status=404)
+    
+
+@api_view(['DELETE'])
+def deleteCustumer(request, customer_id):
+    try:
+        customer = Customer.objects.get(id=customer_id)
+        customer.delete()
+        return Response({'message': 'Cliente deletado com sucesso.'}, status=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        logger.error(f'Error at deleteCustomer {str(e)}', exc_info=True)
+
+        return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
