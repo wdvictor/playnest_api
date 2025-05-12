@@ -22,29 +22,20 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        
         details_data = validated_data.pop('details')
-        
         details = Details.objects.create(**details_data)
-        
-        
         customer = Customer.objects.create(details=details, **validated_data)
-        
         return customer
 
+
     def update(self, instance, validated_data):
+        
         details_data = validated_data.pop('details')
         details = instance.details
-
-        # Atualiza os campos do Customer
         instance.name = validated_data.get('name', instance.name)
-        # Adicione outros campos do Customer aqui
         instance.save()
-
-        # Atualiza os campos do Details
         details.email = details_data.get('email', details.email)
         details.birthday = details_data.get('birthday', details.birthday)
-        # Adicione outros campos do Details aqui
         details.save()
 
         return instance

@@ -10,23 +10,9 @@ from rest_framework import status
 logger = logging.getLogger(__name__)
 
 
-@api_view(['GET'])
-def getData(request):
-    items = Item.objects.all()
-    serializers = ItemSerializer(items, many=True)
-    return Response(serializers.data)
-
 
 @api_view(['POST'])
-def addItem(request):
-    serializer = ItemSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
-
-
-@api_view(['POST'])
-def addCustomer(request):
+def add_customer(request):
     
     serializer = CustomerSerializer(data=request.data)
     if serializer.is_valid():
@@ -37,7 +23,7 @@ def addCustomer(request):
     return Response(serializer.data)
 
 @api_view(['POST'])
-def getAllCustomers(request):
+def get_all_Customers(request):
     try:
         data = request.data 
         filter = data.get('filter', None)
@@ -52,7 +38,7 @@ def getAllCustomers(request):
             serializer = CustomerSerializer(customers, many=True)
             return Response(serializer.data)
       
-        customers = customers.objects.all()
+        customers = Customer.objects.all()
         serializer = CustomerSerializer(customers, many=True)
         return Response(serializer.data)
     
@@ -72,3 +58,18 @@ def deleteCustumer(request, customer_id):
         logger.error(f'Error at deleteCustomer {str(e)}', exc_info=True)
 
         return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['PUT'])
+def update_customer(request, customer_id):
+    try:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
+        return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = CustomerSerializer(customer, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
