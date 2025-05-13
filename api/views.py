@@ -83,9 +83,7 @@ def get_all_sales(request):
         
         return Response({"error": "No sales found"}, status=404)
     
-
-
-
+    
 @api_view(['PUT'])
 @require_api_token
 def add_sale(request):

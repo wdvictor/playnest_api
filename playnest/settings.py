@@ -137,35 +137,30 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
+# settings.py
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-
     'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name} - {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname}: {message}',
-            'style': '{',
+        'test_formatter': {
+            'format': '\033[92m✔ [%(levelname)s]\033[0m %(message)s' if '%(levelname)s' == 'PASS' else 
+                     '\033[91m✖ [%(levelname)s]\033[0m %(message)s',
+            'style': '%',
         },
     },
-
     'handlers': {
-        'console': {
+        'test_handler': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'api.log'),
-            'formatter': 'verbose',
+            'formatter': 'test_formatter',
+            'level': 'INFO',
         },
     },
-
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
+    'loggers': {
+        'test_logger': {
+            'handlers': ['test_handler'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }

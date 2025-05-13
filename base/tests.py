@@ -5,6 +5,7 @@ from rest_framework import status
 from datetime import date
 from base.models import Customer, Details
 from rest_framework.test import APITestCase
+from .test_utils import log_pass
 
 class CustomerTestCase(APITestCase):
 
@@ -24,7 +25,7 @@ class CustomerTestCase(APITestCase):
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
-        print('-->[test_get_all_customers] [Done]')
+        log_pass('test_get_all_customers')
         
         
 
@@ -33,7 +34,7 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'John Doe')
-        print('-->[test_get_all_customers_filter_by_name] [Done]')
+        log_pass('test_get_all_customers_filter_by_name')
         
 
     def test_get_all_customers_filter_by_email(self):
@@ -41,14 +42,14 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Jane Smith')
-        print('-->[test_get_all_customers_filter_by_email] [Done]')
+        log_pass('test_get_all_customers_filter_by_email')
 
 
     def test_filter_no_results(self):
         response = self.client.post(self.url, {'filter': 'name', 'data': 'Nonexistent'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
-        print('-->[test_filter_no_results] [Done]')
+        log_pass('test_filter_no_results')
 
 
     def test_delete_customer(self):
@@ -56,8 +57,43 @@ class CustomerTestCase(APITestCase):
         delete_url = reverse('delete_customer', args=[customer_id])
         response = self.client.delete(delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        
-        
         response = self.client.post(self.url)
         self.assertEqual(len(response.data), 1)
-        print('-->[test_delete_customer] [Done]')
+        log_pass('test_delete_customer')
+
+
+class SaleTestCase(APITestCase):
+
+    def setUp(self):
+        self.details = Details.objects.create(email='jonh.doe@gmail.com1', birthday=date(1990, 5, 10))
+        self.customer = Customer.objects.create(name="John Doe", details=self.details)
+        self.url = reverse('add_sale')
+        self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN)
+
+    
+    def test_all_sales(self): #
+        response = self.client.get(reverse('get_all_sales'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('test_all_sales')
+
+    def test_add_sale(self):#
+        data = {
+            'customer_fk': self.customer.id,
+            'amount': 100.0,
+            'date': date.today()
+        }
+        response = self.client.put(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        log_pass('test_add_sale')
+        
+    def test_add_sale_invalid_data(self):
+        
+        data = {
+            'customer': self.customer.id,
+            'amount': -50.0,  
+            'date': date.today()
+        }
+        response = self.client.put(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        log_pass('test_add_sale_invalid_data')
+
