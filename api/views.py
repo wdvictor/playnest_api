@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from base.models import  Customer, Sale 
 from .serializers import  CustomerSerializer, SaleSerializer
 from rest_framework import status
+from django.db.models import Sum
 
 
 
@@ -91,3 +92,15 @@ def get_all_sales(request):
     except Exception as e:
         logger.error(f'Error at get_all_sales {str(e)}', exc_info=True)
         return Response({"error": "No sales found"}, status=404)
+    
+
+
+@api_view(['GET'])
+def total_sales_per_day(request):
+    stats = (
+        Sale.objects
+        .values('date')
+        .annotate(total=Sum('amount'))
+        .order_by('date')
+    )
+    return Response(stats)

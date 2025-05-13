@@ -8,8 +8,7 @@ urlpatterns = [
     path('update/<int:customer_id>/', views.update_customer),
     path('sale/list/', views.get_all_sales),
     path('sale/add/', views.add_sale),
-    # path('sales/add/')
-    
+    path('sale/total_sales_per_day/', views.total_sales_per_day),
 
     
 ]
