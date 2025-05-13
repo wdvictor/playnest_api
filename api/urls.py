@@ -11,6 +11,8 @@ urlpatterns = [
     path('sale/total_sales_per_day/', views.total_sales_per_day),
     path('sale/top_customer_by_volume/', views.top_customer_by_volume),
     path('sale/top_customer_by_avg_sale/', views.top_customer_by_avg_sale),
+    path('sale/top_customer_by_purchase_frequency/', views.top_customer_by_purchase_frequency),
+
 
     
 ]

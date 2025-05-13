@@ -160,3 +160,29 @@ def top_customer_by_avg_sale(request):
         data = {'detail': 'No Sales Found'}
 
     return Response(data)
+
+
+
+
+
+@api_view(['GET'])
+def top_customer_by_purchase_frequency(request):
+    customers = (
+        Customer.objects
+        .annotate(unique_days=Count('sale__date', distinct=True))
+        .filter(unique_days__gt=0)
+        .order_by('-unique_days')
+    )
+
+    top = customers.first()
+
+    if top:
+        data = {
+            'customer_id': top.id,
+            'name': top.name,
+            'unique_purchase_days': top.unique_days
+        }
+    else:
+        data = {'detail': 'No Sales Found'}
+
+    return Response(data)
