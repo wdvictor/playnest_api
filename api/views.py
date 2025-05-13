@@ -1,4 +1,3 @@
-import logging
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.auth_untils import require_api_token
@@ -8,8 +7,6 @@ from rest_framework import status
 from django.db.models import Sum
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
 
-
-logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @require_api_token
@@ -36,7 +33,7 @@ def get_all_customers(request):
             return Response(serializer.data)
         
         elif filter == 'email':    
-            customers = Customer.objects.filter(details__email__icontains=data.get('data', ))
+            customers = Customer.objects.filter(details__email__icontains=data.get('data'))
             serializer = CustomerSerializer(customers, many=True)
             return Response(serializer.data)
       
@@ -45,7 +42,7 @@ def get_all_customers(request):
         return Response(serializer.data)
     
     except Exception as e:
-        logger.error(f'Error at get_all_customers {str(e)}', exc_info=True)
+        
 
         return Response({"error": "No customers found"}, status=404)
     
@@ -57,7 +54,7 @@ def delete_customer(request, customer_id):
         customer.delete()
         return Response({'message': 'Cliented deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        logger.error(f'Error at delete_customer {str(e)}', exc_info=True)
+        
 
         return Response({'error': 'Client Not Found'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -84,7 +81,7 @@ def get_all_sales(request):
         serializer = SaleSerializer(sales, many=True)
         return Response(serializer.data)
     except Exception as e:
-        logger.error(f'Error at get_all_sales {str(e)}', exc_info=True)
+        
         return Response({"error": "No sales found"}, status=404)
     
 
@@ -124,12 +121,12 @@ def top_customer_by_volume(request):
         .order_by('-total_sales')
         .first()
     )
-
-    if top_customer and top_customer.total_sales:
+    
+    if top_customer and top_customer.total_sales: # type: ignore
         data = {
             'customer_id': top_customer.name,
             'name': top_customer.name,
-            'total_sales': top_customer.total_sales,
+            'total_sales': top_customer.total_sales, # type: ignore
         }
     else:
         data = {'detail': 'No Sales Found'}
@@ -161,11 +158,11 @@ def top_customer_by_avg_sale(request):
 
     if top:
         data = {
-            'customer_id': top.id,
-            'name': top.name,
-            'average_sale': round(top.avg_sale, 2),
-            'total_sales': float(top.total_sales),
-            'sales_count': top.num_sales
+            'customer_id': top.id, # type: ignore
+            'name': top.name, 
+            'average_sale': round(top.avg_sale, 2), # type: ignore
+            'total_sales': float(top.total_sales), # type: ignore
+            'sales_count': top.num_sales # type: ignore
         }
     else:
         data = {'detail': 'No Sales Found'}
@@ -188,9 +185,9 @@ def top_customer_by_purchase_frequency(request):
 
     if top:
         data = {
-            'customer_id': top.id,
+            'customer_id': top.id, # type: ignore
             'name': top.name,
-            'unique_purchase_days': top.unique_days
+            'unique_purchase_days': top.unique_days # type: ignore
         }
     else:
         data = {'detail': 'No Sales Found'}
