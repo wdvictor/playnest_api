@@ -1,6 +1,7 @@
 import logging
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from api.auth_untils import require_api_token
 from base.models import  Customer, Sale 
 from .serializers import  CustomerSerializer, SaleSerializer
 from rest_framework import status
@@ -11,6 +12,7 @@ from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
+@require_api_token
 def add_customer(request):
     
     serializer = CustomerSerializer(data=request.data)
@@ -22,6 +24,7 @@ def add_customer(request):
     return Response(serializer.data)
 
 @api_view(['POST'])
+@require_api_token
 def get_all_Customers(request):
     try:
         data = request.data 
@@ -46,8 +49,8 @@ def get_all_Customers(request):
 
         return Response({"error": "No customers found"}, status=404)
     
-
 @api_view(['DELETE'])
+@require_api_token
 def delete_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
@@ -58,8 +61,8 @@ def delete_customer(request, customer_id):
 
         return Response({'error': 'Client Not Found'}, status=status.HTTP_404_NOT_FOUND)
     
-
 @api_view(['PUT'])
+@require_api_token
 def update_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
@@ -73,17 +76,8 @@ def update_customer(request, customer_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['PUT'])
-def add_sale(request):
-       
-    serializer = SaleSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['GET'])
+@require_api_token
 def get_all_sales(request):
     try:
         sales = Sale.objects.all()
@@ -95,7 +89,22 @@ def get_all_sales(request):
     
 
 
+
+@api_view(['PUT'])
+@require_api_token
+def add_sale(request):
+       
+    serializer = SaleSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 @api_view(['GET'])
+@require_api_token
 def total_sales_per_day(request):
     stats = (
         Sale.objects
@@ -107,6 +116,7 @@ def total_sales_per_day(request):
 
 
 @api_view(['GET'])
+@require_api_token
 def top_customer_by_volume(request):
     top_customer = (
         Customer.objects
@@ -129,6 +139,7 @@ def top_customer_by_volume(request):
 
 
 @api_view(['GET'])
+@require_api_token
 def top_customer_by_avg_sale(request):
     customers = (
         Customer.objects
@@ -162,11 +173,10 @@ def top_customer_by_avg_sale(request):
     return Response(data)
 
 
-
-
-
 @api_view(['GET'])
+@require_api_token
 def top_customer_by_purchase_frequency(request):
+    
     customers = (
         Customer.objects
         .annotate(unique_days=Count('sale__date', distinct=True))
