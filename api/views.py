@@ -5,7 +5,7 @@ from base.models import  Customer, Sale
 from .serializers import  CustomerSerializer, SaleSerializer
 from rest_framework import status
 from django.db.models import Sum
-
+from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -120,6 +120,41 @@ def top_customer_by_volume(request):
             'customer_id': top_customer.name,
             'name': top_customer.name,
             'total_sales': top_customer.total_sales,
+        }
+    else:
+        data = {'detail': 'No Sales Found'}
+
+    return Response(data)
+
+
+
+@api_view(['GET'])
+def top_customer_by_avg_sale(request):
+    customers = (
+        Customer.objects
+        .annotate(
+            total_sales=Sum('sale__amount'),
+            num_sales=Count('sale'),
+        )
+        .filter(num_sales__gt=0) 
+        .annotate(
+            avg_sale=ExpressionWrapper(
+                F('total_sales') / F('num_sales'),
+                output_field=FloatField()
+            )
+        )
+        .order_by('-avg_sale')
+    )
+
+    top = customers.first()
+
+    if top:
+        data = {
+            'customer_id': top.id,
+            'name': top.name,
+            'average_sale': round(top.avg_sale, 2),
+            'total_sales': float(top.total_sales),
+            'sales_count': top.num_sales
         }
     else:
         data = {'detail': 'No Sales Found'}
