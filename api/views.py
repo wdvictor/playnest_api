@@ -1,8 +1,8 @@
 import logging
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from base.models import  Customer 
-from .serializers import  CustomerSerializer
+from base.models import  Customer, Sale 
+from .serializers import  CustomerSerializer, SaleSerializer
 from rest_framework import status
 
 
@@ -70,4 +70,24 @@ def update_customer(request, customer_id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+@api_view(['PUT'])
+def add_sale(request):
+       
+    serializer = SaleSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_all_sales(request):
+    try:
+        sales = Sale.objects.all()
+        serializer = SaleSerializer(sales, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        logger.error(f'Error at get_all_sales {str(e)}', exc_info=True)
+        return Response({"error": "No sales found"}, status=404)
