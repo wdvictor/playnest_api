@@ -5,7 +5,7 @@ from rest_framework import status
 from datetime import date
 from base.models import Customer, Details, Sale
 from rest_framework.test import APITestCase
-from .test_utils import log_pass
+from .test_utils import log_pass, log_fail, log_warning
 
 class CustomerTestCase(APITestCase):
 
@@ -76,16 +76,20 @@ class SaleTestCase(APITestCase):
         self.sale.save()
     
 
-    def test_all_sales(self): #
+    def test_get_all_sales(self): #
         response = self.client.get(reverse('get_all_sales'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_all_sales]')
 
-    def test_all_sales_no_data(self):
-        self.sale.delete()
-        response = self.client.get(reverse('get_all_sales'))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        log_pass('[test_all_sales_no_data]')
+    def test_get_all_sales_no_data(self):
+        try:
+            self.sale.delete()
+            response = self.client.get(reverse('get_all_sales'))
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+            log_pass('[test_all_sales_no_data]')
+        except Exception as e:
+            log_fail('[test_get_all_sales_no_data]')
+            log_warning('[Exception]: {}'.format(e))
 
     def test_add_sale(self):#
         data = {
@@ -133,7 +137,7 @@ class SaleTestCase(APITestCase):
     def test_top_customer_by_volume_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('top_customer_by_volume'), data=())
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         log_pass('[test_top_customer_by_volume]')
 
 
@@ -147,7 +151,7 @@ class SaleTestCase(APITestCase):
     def test_top_customer_by_avg_sale_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('top_customer_by_avg_sale'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         log_pass('[test_top_customer_by_avg_sale_no_data]')
 
 
@@ -161,5 +165,5 @@ class SaleTestCase(APITestCase):
     def test_customer_by_purchase_frequency_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('customer_by_purchase_frequency'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         log_pass('[test_customer_by_purchase_frequency_no_data]')

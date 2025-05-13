@@ -75,13 +75,17 @@ def update_customer(request, customer_id):
 @api_view(['GET'])
 @require_api_token
 def get_all_sales(request):
-    try:
-        sales = Sale.objects.all()
-        serializer = SaleSerializer(sales, many=True)
-        return Response(serializer.data)
-    except Exception as e:
-        
+    
+    sales = Sale.objects.all()
+    serializer = SaleSerializer(sales, many=True)
+
+    if not sales:
         return Response({"error": "No sales found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    return Response(serializer.data)
+
+        
+        
     
 
 @api_view(['PUT'])
