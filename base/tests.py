@@ -1,12 +1,11 @@
 import logging
 from django.conf import settings
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from datetime import date
 from base.models import Customer, Details
 from rest_framework.test import APITestCase
-logger = logging.getLogger(__name__)
+
 class CustomerTestCase(APITestCase):
 
     def setUp(self):
@@ -51,3 +50,14 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(len(response.data), 0)
         print('-->[test_filter_no_results] [Done]')
 
+
+    def test_delete_customer(self):
+        customer_id = self.customer1.id
+        delete_url = reverse('delete_customer', args=[customer_id])
+        response = self.client.delete(delete_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        
+        response = self.client.post(self.url)
+        self.assertEqual(len(response.data), 1)
+        print('-->[test_delete_customer] [Done]')

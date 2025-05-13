@@ -54,8 +54,7 @@ def delete_customer(request, customer_id):
         customer.delete()
         return Response({'message': 'Cliented deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        
-
+    
         return Response({'error': 'Client Not Found'}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['PUT'])
