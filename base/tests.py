@@ -108,17 +108,20 @@ class SaleTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         log_pass('[test_add_sale_invalid_data]')
 
+
     def test_total_sales_per_day(self):
         self.add_sale()
         response = self.client.get(reverse('total_sales_per_day'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_total_sales_per_day]')
     
+
     def test_total_sales_per_day_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('total_sales_per_day'))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         log_pass('[test_total_sales_per_day_no_data]')
+
 
     def test_top_customer_by_volume(self):
         self.add_sale()
@@ -126,11 +129,13 @@ class SaleTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_top_customer_by_volume]')
 
+
     def test_top_customer_by_volume_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('top_customer_by_volume'), data=())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_top_customer_by_volume]')
+
 
     def test_top_customer_by_avg_sale(self):
         self.add_sale()
@@ -138,9 +143,23 @@ class SaleTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_top_customer_by_avg_sale]')
 
-        
+
     def test_top_customer_by_avg_sale_no_data(self):
         self.sale.delete()
         response = self.client.get(reverse('top_customer_by_avg_sale'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         log_pass('[test_top_customer_by_avg_sale_no_data]')
+
+
+    def test_customer_by_purchase_frequency(self):
+        self.add_sale()
+        response = self.client.get(reverse('customer_by_purchase_frequency'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_customer_by_purchase_frequency]')
+
+
+    def test_customer_by_purchase_frequency_no_data(self):
+        self.sale.delete()
+        response = self.client.get(reverse('customer_by_purchase_frequency'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_customer_by_purchase_frequency_no_data]')

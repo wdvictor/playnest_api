@@ -187,13 +187,14 @@ def top_customer_by_purchase_frequency(request):
 
     top = customers.first()
 
-    if top:
-        data = {
-            'customer_id': top.id, # type: ignore
-            'name': top.name,
-            'unique_purchase_days': top.unique_days # type: ignore
-        }
-    else:
-        data = {'detail': 'No Sales Found'}
+    if not top:
+        return Response({'detail': 'No Sales Found'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(data)
+    data = {
+        'customer_id': top.id, # type: ignore
+        'name': top.name,
+        'unique_purchase_days': top.unique_days # type: ignore
+    }
+    
+
+    return Response(data, status=status.HTTP_200_OK)
