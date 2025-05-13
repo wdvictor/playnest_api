@@ -3,7 +3,7 @@ from django.conf import settings
 from django.urls import reverse
 from rest_framework import status
 from datetime import date
-from base.models import Customer, Details
+from base.models import Customer, Details, Sale
 from rest_framework.test import APITestCase
 from .test_utils import log_pass
 
@@ -25,7 +25,7 @@ class CustomerTestCase(APITestCase):
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
-        log_pass('test_get_all_customers')
+        log_pass('[test_get_all_customers]')
         
         
 
@@ -34,7 +34,7 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'John Doe')
-        log_pass('test_get_all_customers_filter_by_name')
+        log_pass('[test_get_all_customers_filter_by_name]')
         
 
     def test_get_all_customers_filter_by_email(self):
@@ -42,14 +42,14 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Jane Smith')
-        log_pass('test_get_all_customers_filter_by_email')
+        log_pass('[test_get_all_customers_filter_by_email]')
 
 
     def test_filter_no_results(self):
         response = self.client.post(self.url, {'filter': 'name', 'data': 'Nonexistent'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
-        log_pass('test_filter_no_results')
+        log_pass('[test_filter_no_results]')
 
 
     def test_delete_customer(self):
@@ -59,7 +59,7 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         response = self.client.post(self.url)
         self.assertEqual(len(response.data), 1)
-        log_pass('test_delete_customer')
+        log_pass('[test_delete_customer]')
 
 
 class SaleTestCase(APITestCase):
@@ -67,14 +67,25 @@ class SaleTestCase(APITestCase):
     def setUp(self):
         self.details = Details.objects.create(email='jonh.doe@gmail.com1', birthday=date(1990, 5, 10))
         self.customer = Customer.objects.create(name="John Doe", details=self.details)
+        self.sale = Sale.objects.create(customer_fk=self.customer, date=date.today(), amount=100.0)
         self.url = reverse('add_sale')
         self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN)
 
+    def add_sale(self):
+        self.sale = Sale.objects.create(customer_fk=self.customer, date=date.today(), amount=100.0)
+        self.sale.save()
     
+
     def test_all_sales(self): #
         response = self.client.get(reverse('get_all_sales'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        log_pass('test_all_sales')
+        log_pass('[test_all_sales]')
+
+    def test_all_sales_no_data(self):
+        self.sale.delete()
+        response = self.client.get(reverse('get_all_sales'))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        log_pass('[test_all_sales_no_data]')
 
     def test_add_sale(self):#
         data = {
@@ -84,7 +95,7 @@ class SaleTestCase(APITestCase):
         }
         response = self.client.put(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        log_pass('test_add_sale')
+        log_pass('[test_add_sale]')
         
     def test_add_sale_invalid_data(self):
         
@@ -95,5 +106,41 @@ class SaleTestCase(APITestCase):
         }
         response = self.client.put(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        log_pass('test_add_sale_invalid_data')
+        log_pass('[test_add_sale_invalid_data]')
 
+    def test_total_sales_per_day(self):
+        self.add_sale()
+        response = self.client.get(reverse('total_sales_per_day'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_total_sales_per_day]')
+    
+    def test_total_sales_per_day_no_data(self):
+        self.sale.delete()
+        response = self.client.get(reverse('total_sales_per_day'))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        log_pass('[test_total_sales_per_day_no_data]')
+
+    def test_top_customer_by_volume(self):
+        self.add_sale()
+        response = self.client.get(reverse('top_customer_by_volume'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_top_customer_by_volume]')
+
+    def test_top_customer_by_volume_no_data(self):
+        self.sale.delete()
+        response = self.client.get(reverse('top_customer_by_volume'), data=())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_top_customer_by_volume]')
+
+    def test_top_customer_by_avg_sale(self):
+        self.add_sale()
+        response = self.client.get(reverse('top_customer_by_avg_sale'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_top_customer_by_avg_sale]')
+
+        
+    def test_top_customer_by_avg_sale_no_data(self):
+        self.sale.delete()
+        response = self.client.get(reverse('top_customer_by_avg_sale'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log_pass('[test_top_customer_by_avg_sale_no_data]')

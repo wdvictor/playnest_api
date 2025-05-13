@@ -81,9 +81,9 @@ def get_all_sales(request):
         return Response(serializer.data)
     except Exception as e:
         
-        return Response({"error": "No sales found"}, status=404)
+        return Response({"error": "No sales found"}, status=status.HTTP_404_NOT_FOUND)
     
-    
+
 @api_view(['PUT'])
 @require_api_token
 def add_sale(request):
@@ -106,7 +106,10 @@ def total_sales_per_day(request):
         .annotate(total=Sum('amount'))
         .order_by('date')
     )
-    return Response(stats)
+
+    if not stats:
+        return Response({'detail': 'No Sales Found'}, status=status.HTTP_404_NOT_FOUND)
+    return Response(stats, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -127,8 +130,9 @@ def top_customer_by_volume(request):
         }
     else:
         data = {'detail': 'No Sales Found'}
+        return Response(data, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(data)
+    return Response(data, status=status.HTTP_200_OK)
 
 
 
@@ -153,18 +157,21 @@ def top_customer_by_avg_sale(request):
 
     top = customers.first()
 
-    if top:
-        data = {
-            'customer_id': top.id, # type: ignore
-            'name': top.name, 
-            'average_sale': round(top.avg_sale, 2), # type: ignore
-            'total_sales': float(top.total_sales), # type: ignore
-            'sales_count': top.num_sales # type: ignore
-        }
-    else:
-        data = {'detail': 'No Sales Found'}
+    if not top:
+        return Response({'detail': 'No Sales Found'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(data)
+   
+    data = {
+        'customer_id': top.id, # type: ignore
+        'name': top.name, 
+        'average_sale': round(top.avg_sale, 2), # type: ignore
+        'total_sales': float(top.total_sales), # type: ignore
+        'sales_count': top.num_sales # type: ignore
+    }
+   
+
+    return Response(data, status=status.HTTP_200_OK)
+
 
 
 @api_view(['GET'])
