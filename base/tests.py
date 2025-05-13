@@ -241,24 +241,24 @@ class SaleTestCase(APITestCase):
 
 
 
-    def test_customer_by_purchase_frequency(self):
+    def test_top_customer_by_purchase_frequency(self):
         try:
             self.add_sale()
-            response = self.client.get(reverse('customer_by_purchase_frequency'))
+            response = self.client.get(reverse('top_customer_by_purchase_frequency'))
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            log_pass('[test_customer_by_purchase_frequency]')
+            log_pass('[top_customer_by_purchase_frequency]')
         except Exception as e:
-            log_fail('[test_customer_by_purchase_frequency]')
+            log_fail('[test_top_customer_by_purchase_frequency]')
             log_warning('[Exception]: {}'.format(e))
 
 
 
-    def test_customer_by_purchase_frequency_no_data(self):
+    def test_top_customer_by_purchase_frequency_no_data(self):
         try:
             self.sale.delete()
-            response = self.client.get(reverse('customer_by_purchase_frequency'))
+            response = self.client.get(reverse('top_customer_by_purchase_frequency'))
             self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-            log_pass('[test_customer_by_purchase_frequency_no_data]')
+            log_pass('[test_top_customer_by_purchase_frequency_no_data]')
         except Exception as e:
-            log_fail('[test_customer_by_purchase_frequency_no_data]')
+            log_fail('[test_top_customer_by_purchase_frequency_no_data]')
             log_warning('[Exception]: {}'.format(e))
