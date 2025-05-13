@@ -52,11 +52,11 @@ def delete_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
         customer.delete()
-        return Response({'message': 'Cliente deletado com sucesso.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Cliented deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        logger.error(f'Error at deleteCustomer {str(e)}', exc_info=True)
+        logger.error(f'Error at delete_customer {str(e)}', exc_info=True)
 
-        return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Client Not Found'}, status=status.HTTP_404_NOT_FOUND)
     
 
 @api_view(['PUT'])
@@ -64,7 +64,7 @@ def update_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
     except Customer.DoesNotExist:
-        return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Client Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = CustomerSerializer(customer, data=request.data)
     if serializer.is_valid():
@@ -104,3 +104,24 @@ def total_sales_per_day(request):
         .order_by('date')
     )
     return Response(stats)
+
+
+@api_view(['GET'])
+def top_customer_by_volume(request):
+    top_customer = (
+        Customer.objects
+        .annotate(total_sales=Sum('sale__amount'))
+        .order_by('-total_sales')
+        .first()
+    )
+
+    if top_customer and top_customer.total_sales:
+        data = {
+            'customer_id': top_customer.name,
+            'name': top_customer.name,
+            'total_sales': top_customer.total_sales,
+        }
+    else:
+        data = {'detail': 'No Sales Found'}
+
+    return Response(data)
