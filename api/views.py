@@ -25,7 +25,7 @@ def add_customer(request):
 
 @api_view(['POST'])
 @require_api_token
-def get_all_Customers(request):
+def get_all_customers(request):
     try:
         data = request.data 
         filter = data.get('filter', None)
