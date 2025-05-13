@@ -1,15 +1,13 @@
 import logging
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from base.models import Item, Customer
-from .serializers import ItemSerializer, CustomerSerializer
+from base.models import  Customer 
+from .serializers import  CustomerSerializer
 from rest_framework import status
 
 
 
 logger = logging.getLogger(__name__)
-
-
 
 @api_view(['POST'])
 def add_customer(request):
@@ -43,13 +41,13 @@ def get_all_Customers(request):
         return Response(serializer.data)
     
     except Exception as e:
-        logger.error(f'Error at getAllCustomers {str(e)}', exc_info=True)
+        logger.error(f'Error at get_all_customers {str(e)}', exc_info=True)
 
         return Response({"error": "No customers found"}, status=404)
     
 
 @api_view(['DELETE'])
-def deleteCustumer(request, customer_id):
+def delete_customer(request, customer_id):
     try:
         customer = Customer.objects.get(id=customer_id)
         customer.delete()

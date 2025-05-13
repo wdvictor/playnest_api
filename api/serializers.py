@@ -1,11 +1,6 @@
 from rest_framework import serializers
-from base.models import Item, Customer, Details
+from base.models import Customer, Details
 
-
-class ItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Item
-        fields = '__all__'
 
 
 class DetailsSerializer(serializers.ModelSerializer):
