@@ -7,10 +7,11 @@ class Details(models.Model):
 
 
 class Customer(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     details = models.OneToOneField(Details, on_delete=models.CASCADE)
 
 class Sale(models.Model):
-    customer_fk = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='sales')
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)

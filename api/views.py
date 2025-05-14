@@ -371,3 +371,56 @@ def top_customer_by_purchase_frequency(request):
 
     return Response(data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@require_api_token
+def get_all_customers_data(requests):
+    
+    clientes_data = []
+
+    customers = Customer.objects.all().prefetch_related('details')
+    sales = Sale.objects.all()
+
+    for customer in customers:
+        
+        vendas_filtradas = sales.filter(customer_id=customer.id).values('date', 'amount')
+        vendas = SaleSerializer(vendas_filtradas, many=True).data
+        vendas_formatadas = [
+            {
+                "data": venda['date'].strftime('%Y-%m-%d'),
+                "valor": float(venda['amount'])
+            }
+            for venda in vendas
+        ]
+
+        cliente_dict = {
+            "info": {
+                "nomeCompleto": customer.name,
+                "detalhes": {
+                    "email": customer.details.email,
+                    "nascimento": customer.details.birthday.strftime('%Y-%m-%d')
+                }
+            },
+            "estatisticas": {
+                "vendas": vendas_formatadas
+            }
+        }
+        clientes_data.append(cliente_dict)
+
+       
+    response = {
+        "data": {
+            "clientes": clientes_data
+        },
+        "meta": {
+            "registroTotal": customers.count(),
+            "pagina": 1
+        },
+        "redundante": {
+            "status": "ok"
+        }
+    }
+
+    return Response(response)
+
+
+    

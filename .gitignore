@@ -11,7 +11,7 @@ db.sqlite3
 *.bak
 *.tmp
 
-**/migrations/
+
 **/migrations/*.pyc
 **/migrations/__pycache__/
 

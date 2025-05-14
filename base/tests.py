@@ -95,7 +95,7 @@ class SaleTestCase(APITestCase):
         try:
             self.details = Details.objects.create(email='jonh.doe@gmail.com1', birthday=date(1990, 5, 10))
             self.customer = Customer.objects.create(name="John Doe", details=self.details)
-            self.sale = Sale.objects.create(customer_fk=self.customer, date=date.today(), amount=100.0)
+            self.sale = Sale.objects.create(customer_id=self.customer, date=date.today(), amount=100.0)
             self.url = reverse('add_sale')
             self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN) # type: ignore
         except Exception as e:
@@ -106,7 +106,7 @@ class SaleTestCase(APITestCase):
 
     def add_sale(self):
         try:
-            self.sale = Sale.objects.create(customer_fk=self.customer, date=date.today(), amount=100.0)
+            self.sale = Sale.objects.create(customer_id=self.customer, date=date.today(), amount=100.0)
             self.sale.save()
         except Exception as e:
             log_fail('[add_sale]')
@@ -140,7 +140,7 @@ class SaleTestCase(APITestCase):
     def test_add_sale(self):
         try:
             data = {
-                'customer_fk': self.customer.id, # type: ignore
+                'customer_id': self.customer.id, # type: ignore
                 'amount': 100.0,
                 'date': date.today()
             }
