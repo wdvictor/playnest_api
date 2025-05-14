@@ -1,8 +1,10 @@
+from atexit import register
 from django.urls import path
 from . import views
 
 
 urlpatterns = [
+    path('register/', views.register_user, name='register_user'),
     path('get_all_users/', views.get_all_users, name='get_all_users'),
     path('add_user/', views.add_user, name='add_user'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),

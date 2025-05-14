@@ -3,17 +3,18 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.auth_untils import require_api_token
-from base.models import  User, Sale 
-from api.serializers import  UserSerializer
+from base.models import  Customer
+from api.serializers import  RegisterSerializer, CustomerSerializer
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes 
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @extend_schema(
     methods=["POST"],
-    description="Add a new user",
-    request=UserSerializer,
+    description="Create a new user account",
+    request=RegisterSerializer,
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -24,14 +25,48 @@ from drf_spectacular.types import OpenApiTypes
         )
     ],
     responses={
-        201: UserSerializer,
+        201: {
+            'access': 'ACESS_TOKEN',
+            'refresh': 'REFRESH_TOKEN',
+        },
+        400: OpenApiTypes.OBJECT,
+    },
+)
+@api_view(['POST'])
+@require_api_token
+def register_user(request):
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh)
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    methods=["POST"],
+    description="Add a new user",
+    request=Customer,
+    parameters=[
+        OpenApiParameter(
+            name="X-API-KEY",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="API authentication token"
+        )
+    ],
+    responses={
+        201: Customer,
         400: OpenApiTypes.OBJECT,
     },
 )
 @api_view(['POST'])
 @require_api_token
 def add_user(request):
-    serializer = UserSerializer(data=request.data)
+    serializer = CustomerSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
     else:
@@ -52,7 +87,7 @@ def add_user(request):
         )
     ],
     responses={
-        200: UserSerializer(many=True),
+        200: CustomerSerializer(many=True),
         404: OpenApiTypes.OBJECT,
     },
 )
@@ -63,17 +98,17 @@ def get_all_users(request):
         data = request.data 
         filter = data.get('filter', None)
         if filter == 'name':
-            users = User.objects.filter(name__icontains=data.get('data', ''))
-            serializer = UserSerializer(users, many=True)
+            users = Customer.objects.filter(name__icontains=data.get('data', ''))
+            serializer = CustomerSerializer(users, many=True)
             return Response(serializer.data)
         
         elif filter == 'email':    
-            users = User.objects.filter(details__email__icontains=data.get('data'))
-            serializer = UserSerializer(users, many=True)
+            users = Customer.objects.filter(details__email__icontains=data.get('data'))
+            serializer = CustomerSerializer(users, many=True)
             return Response(serializer.data)
       
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        users = Customer.objects.all()
+        serializer = CustomerSerializer(users, many=True)
         return Response(serializer.data)
     
     except Exception as e:
@@ -107,7 +142,7 @@ def get_all_users(request):
 @require_api_token
 def delete_user(request, user_id):
     try:
-        user = User.objects.get(id=user_id)
+        user = Customer.objects.get(id=user_id)
         user.delete()
         return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
@@ -116,7 +151,7 @@ def delete_user(request, user_id):
 @extend_schema(
     methods=["PUT"],
     description="Update a user by ID",
-    request=UserSerializer,
+    request=CustomerSerializer,
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -134,7 +169,7 @@ def delete_user(request, user_id):
         )
     ],
     responses={
-        200: UserSerializer,
+        200: CustomerSerializer,
         400: OpenApiTypes.OBJECT,
         404: OpenApiTypes.OBJECT,
     },
@@ -143,11 +178,11 @@ def delete_user(request, user_id):
 @require_api_token
 def update_user(request, user_id):
     try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user = Customer.objects.get(id=user_id)
+    except Customer.DoesNotExist:
         return Response({'error': 'User Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = UserSerializer(user, data=request.data)
+    serializer = CustomerSerializer(user, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

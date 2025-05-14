@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.auth_untils import require_api_token
-from base.models import  User, Sale 
+from base.models import  Customer, Sale 
 from api.serializers import  SaleSerializer
 from rest_framework import status
 from django.db.models import Sum
@@ -117,7 +117,7 @@ def total_sales_per_day(request):
 @require_api_token
 def top_user_by_volume(request):
     top_user = (
-        User.objects
+        Customer.objects
         .annotate(total_sales=Sum('sales__amount'))
         .order_by('-total_sales')
         .first()
@@ -156,7 +156,7 @@ def top_user_by_volume(request):
 @require_api_token
 def top_user_by_avg_sale(request):
     users = (
-        User.objects
+        Customer.objects
         .annotate(
             total_sales=Sum('sales__amount'),
             num_sales=Count('sales'),
@@ -207,7 +207,7 @@ def top_user_by_avg_sale(request):
 @require_api_token
 def top_user_by_purchase_frequency(request):
     users = (
-        User.objects
+        Customer.objects
         .annotate(unique_days=Count('sales__date', distinct=True))
         .filter(unique_days__gt=0)
         .order_by('-unique_days')
@@ -232,7 +232,7 @@ def get_all_users_data(requests):
     
     clientes_data = []
 
-    users = User.objects.all().prefetch_related('details')
+    users = Customer.objects.all().prefetch_related('details')
     sales = Sale.objects.all()
 
     for user in users:
