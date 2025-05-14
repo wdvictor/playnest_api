@@ -26,6 +26,9 @@ env/
 .vscode/
 .idea/
 *.swp
+.pylintrc
+
+
 
 
 .DS_Store

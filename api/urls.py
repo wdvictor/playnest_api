@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
 
 urlpatterns = [
     path('get_all_customers/', views.get_all_customers, name='get_all_customers'),
