@@ -1,2 +1,2 @@
-from .customer_view import *
+from .user_view import *
 from .sale_view import *

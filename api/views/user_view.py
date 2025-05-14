@@ -3,8 +3,8 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.auth_untils import require_api_token
-from base.models import  Customer, Sale 
-from api.serializers import  CustomerSerializer
+from base.models import  User, Sale 
+from api.serializers import  UserSerializer
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes 
@@ -12,8 +12,8 @@ from drf_spectacular.types import OpenApiTypes
 
 @extend_schema(
     methods=["POST"],
-    description="Add a new customer",
-    request=CustomerSerializer,
+    description="Add a new user",
+    request=UserSerializer,
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -24,14 +24,14 @@ from drf_spectacular.types import OpenApiTypes
         )
     ],
     responses={
-        201: CustomerSerializer,
+        201: UserSerializer,
         400: OpenApiTypes.OBJECT,
     },
 )
 @api_view(['POST'])
 @require_api_token
-def add_customer(request):
-    serializer = CustomerSerializer(data=request.data)
+def add_user(request):
+    serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
     else:
@@ -40,7 +40,7 @@ def add_customer(request):
 
 @extend_schema(
     methods=["POST"],
-    description="Retrieve all customers with optional filters",
+    description="Retrieve all users with optional filters",
     request=OpenApiTypes.OBJECT,
     parameters=[
         OpenApiParameter(
@@ -52,36 +52,36 @@ def add_customer(request):
         )
     ],
     responses={
-        200: CustomerSerializer(many=True),
+        200: UserSerializer(many=True),
         404: OpenApiTypes.OBJECT,
     },
 )
 @api_view(['POST'])
 @require_api_token
-def get_all_customers(request):
+def get_all_users(request):
     try:
         data = request.data 
         filter = data.get('filter', None)
         if filter == 'name':
-            customers = Customer.objects.filter(name__icontains=data.get('data', ''))
-            serializer = CustomerSerializer(customers, many=True)
+            users = User.objects.filter(name__icontains=data.get('data', ''))
+            serializer = UserSerializer(users, many=True)
             return Response(serializer.data)
         
         elif filter == 'email':    
-            customers = Customer.objects.filter(details__email__icontains=data.get('data'))
-            serializer = CustomerSerializer(customers, many=True)
+            users = User.objects.filter(details__email__icontains=data.get('data'))
+            serializer = UserSerializer(users, many=True)
             return Response(serializer.data)
       
-        customers = Customer.objects.all()
-        serializer = CustomerSerializer(customers, many=True)
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
     
     except Exception as e:
-        return Response({"error": "No customers found"}, status=404)
+        return Response({"error": "No users found"}, status=404)
 
 @extend_schema(
     methods=["DELETE"],
-    description="Delete a customer by ID",
+    description="Delete a user by ID",
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -91,11 +91,11 @@ def get_all_customers(request):
             description="API authentication token"
         ),
         OpenApiParameter(
-            name="customer_id",
+            name="user_id",
             type=OpenApiTypes.INT,
             location=OpenApiParameter.PATH,
             required=True,
-            description="ID of the customer to delete"
+            description="ID of the user to delete"
         )
     ],
     responses={
@@ -105,18 +105,18 @@ def get_all_customers(request):
 )
 @api_view(['DELETE'])
 @require_api_token
-def delete_customer(request, customer_id):
+def delete_user(request, user_id):
     try:
-        customer = Customer.objects.get(id=customer_id)
-        customer.delete()
-        return Response({'message': 'Customer deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return Response({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        return Response({'error': 'Customer Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
 @extend_schema(
     methods=["PUT"],
-    description="Update a customer by ID",
-    request=CustomerSerializer,
+    description="Update a user by ID",
+    request=UserSerializer,
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -126,28 +126,28 @@ def delete_customer(request, customer_id):
             description="API authentication token"
         ),
         OpenApiParameter(
-            name="customer_id",
+            name="user_id",
             type=OpenApiTypes.INT,
             location=OpenApiParameter.PATH,
             required=True,
-            description="ID of the customer to update"
+            description="ID of the user to update"
         )
     ],
     responses={
-        200: CustomerSerializer,
+        200: UserSerializer,
         400: OpenApiTypes.OBJECT,
         404: OpenApiTypes.OBJECT,
     },
 )
 @api_view(['PUT'])
 @require_api_token
-def update_customer(request, customer_id):
+def update_user(request, user_id):
     try:
-        customer = Customer.objects.get(id=customer_id)
-    except Customer.DoesNotExist:
-        return Response({'error': 'Customer Not Found'}, status=status.HTTP_404_NOT_FOUND)
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User Not Found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = CustomerSerializer(customer, data=request.data)
+    serializer = UserSerializer(user, data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)

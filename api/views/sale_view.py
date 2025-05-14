@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from api.auth_untils import require_api_token
-from base.models import  Customer, Sale 
+from base.models import  User, Sale 
 from api.serializers import  SaleSerializer
 from rest_framework import status
 from django.db.models import Sum
@@ -98,7 +98,7 @@ def total_sales_per_day(request):
 
 @extend_schema(
     methods=["GET"],
-    description="Retrieve the top customer by sales volume",
+    description="Retrieve the top user by sales volume",
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -115,19 +115,19 @@ def total_sales_per_day(request):
 )
 @api_view(['GET'])
 @require_api_token
-def top_customer_by_volume(request):
-    top_customer = (
-        Customer.objects
+def top_user_by_volume(request):
+    top_user = (
+        User.objects
         .annotate(total_sales=Sum('sales__amount'))
         .order_by('-total_sales')
         .first()
     )
     
-    if top_customer and top_customer.total_sales: # type: ignore
+    if top_user and top_user.total_sales: # type: ignore
         data = {
-            'customer_id': top_customer.name,
-            'name': top_customer.name,
-            'total_sales': top_customer.total_sales, # type: ignore
+            'user_id': top_user.name,
+            'name': top_user.name,
+            'total_sales': top_user.total_sales, # type: ignore
         }
     else:
         data = {'detail': 'No Sales Found'}
@@ -137,7 +137,7 @@ def top_customer_by_volume(request):
 
 @extend_schema(
     methods=["GET"],
-    description="Retrieve the top customer by average sale value",
+    description="Retrieve the top user by average sale value",
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -154,9 +154,9 @@ def top_customer_by_volume(request):
 )
 @api_view(['GET'])
 @require_api_token
-def top_customer_by_avg_sale(request):
-    customers = (
-        Customer.objects
+def top_user_by_avg_sale(request):
+    users = (
+        User.objects
         .annotate(
             total_sales=Sum('sales__amount'),
             num_sales=Count('sales'),
@@ -171,13 +171,13 @@ def top_customer_by_avg_sale(request):
         .order_by('-avg_sale')
     )
 
-    top = customers.first()
+    top = users.first()
 
     if not top:
         return Response({'detail': 'No Sales Found'}, status=status.HTTP_404_NOT_FOUND)
 
     data = {
-        'customer_id': top.id, # type: ignore
+        'user_id': top.id, # type: ignore
         'name': top.name, 
         'average_sale': round(top.avg_sale, 2), # type: ignore
         'total_sales': float(top.total_sales), # type: ignore
@@ -188,7 +188,7 @@ def top_customer_by_avg_sale(request):
 
 @extend_schema(
     methods=["GET"],
-    description="Retrieve the top customer by purchase frequency",
+    description="Retrieve the top user by purchase frequency",
     parameters=[
         OpenApiParameter(
             name="X-API-KEY",
@@ -205,21 +205,21 @@ def top_customer_by_avg_sale(request):
 )
 @api_view(['GET'])
 @require_api_token
-def top_customer_by_purchase_frequency(request):
-    customers = (
-        Customer.objects
+def top_user_by_purchase_frequency(request):
+    users = (
+        User.objects
         .annotate(unique_days=Count('sales__date', distinct=True))
         .filter(unique_days__gt=0)
         .order_by('-unique_days')
     )
 
-    top = customers.first()
+    top = users.first()
 
     if not top:
         return Response({'detail': 'No Sales Found'}, status=status.HTTP_404_NOT_FOUND)
 
     data = {
-        'customer_id': top.id, # type: ignore
+        'user_id': top.id, # type: ignore
         'name': top.name,
         'unique_purchase_days': top.unique_days # type: ignore
     }
@@ -228,16 +228,16 @@ def top_customer_by_purchase_frequency(request):
 
 @api_view(['GET'])
 @require_api_token
-def get_all_customers_data(requests):
+def get_all_users_data(requests):
     
     clientes_data = []
 
-    customers = Customer.objects.all().prefetch_related('details')
+    users = User.objects.all().prefetch_related('details')
     sales = Sale.objects.all()
 
-    for customer in customers:
+    for user in users:
         
-        vendas_filtradas = sales.filter(customer_id=customer.id).values('date', 'amount',)
+        vendas_filtradas = sales.filter(user_id=user.id).values('date', 'amount',)
         vendas_formatadas = [
             {
                 "data": venda['date'].strftime('%Y-%m-%d'),
@@ -248,10 +248,10 @@ def get_all_customers_data(requests):
 
         cliente_dict = {
             "info": {
-                "nomeCompleto": customer.name,
+                "nomeCompleto": user.name,
                 "detalhes": {
-                    "email": customer.details.email,
-                    "nascimento": customer.details.birthday.strftime('%Y-%m-%d')
+                    "email": user.details.email,
+                    "nascimento": user.details.birthday.strftime('%Y-%m-%d')
                 }
             },
             "estatisticas": {
@@ -266,7 +266,7 @@ def get_all_customers_data(requests):
             "clientes": clientes_data
         },
         "meta": {
-            "registroTotal": customers.count(),
+            "registroTotal": users.count(),
             "pagina": 1
         },
         "redundante": {

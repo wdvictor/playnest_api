@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from base.models import Customer, Details, Sale
+from base.models import User, Details, Sale
 
 
 
@@ -8,18 +8,18 @@ class DetailsSerializer(serializers.ModelSerializer):
         model = Details
         fields = '__all__'
 
-class CustomerSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     details = DetailsSerializer()
 
     class Meta:
-        model = Customer
+        model = User
         fields = '__all__'
 
     def create(self, validated_data):
         details_data = validated_data.pop('details')
         details = Details.objects.create(**details_data)
-        customer = Customer.objects.create(details=details, **validated_data)
-        return customer
+        user = User.objects.create(details=details, **validated_data)
+        return user
 
 
     def update(self, instance, validated_data):
