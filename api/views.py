@@ -382,14 +382,13 @@ def get_all_customers_data(requests):
 
     for customer in customers:
         
-        vendas_filtradas = sales.filter(customer_id=customer.id).values('date', 'amount')
-        vendas = SaleSerializer(vendas_filtradas, many=True).data
+        vendas_filtradas = sales.filter(customer_id=customer.id).values('date', 'amount',)
         vendas_formatadas = [
             {
                 "data": venda['date'].strftime('%Y-%m-%d'),
                 "valor": float(venda['amount'])
             }
-            for venda in vendas
+            for venda in vendas_filtradas
         ]
 
         cliente_dict = {
