@@ -1,5 +1,6 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from api.auth_untils import require_api_token
 from base.models import  Customer, Sale 
 from api.serializers import  SaleSerializer
@@ -20,6 +21,13 @@ from drf_spectacular.types import OpenApiTypes
             location=OpenApiParameter.HEADER,
             required=True,
             description="API authentication token"
+        ),
+        OpenApiParameter(
+            name="Authorization",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="User authentication token"
         )
     ],
     responses={
@@ -28,6 +36,7 @@ from drf_spectacular.types import OpenApiTypes
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def get_all_sales(request):
     sales = Sale.objects.all()
@@ -49,6 +58,13 @@ def get_all_sales(request):
             location=OpenApiParameter.HEADER,
             required=True,
             description="API authentication token"
+        ),
+         OpenApiParameter(
+            name="Authorization",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="User authentication token"
         )
     ],
     responses={
@@ -57,6 +73,7 @@ def get_all_sales(request):
     },
 )
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def add_sale(request):
     serializer = SaleSerializer(data=request.data)
@@ -83,6 +100,7 @@ def add_sale(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def total_sales_per_day(request):
     stats = (
@@ -114,6 +132,7 @@ def total_sales_per_day(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def top_user_by_volume(request):
     top_user = (
@@ -153,6 +172,7 @@ def top_user_by_volume(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def top_user_by_avg_sale(request):
     users = (
@@ -204,6 +224,7 @@ def top_user_by_avg_sale(request):
     },
 )
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def top_user_by_purchase_frequency(request):
     users = (
@@ -228,6 +249,7 @@ def top_user_by_purchase_frequency(request):
 
 @api_view(['GET'])
 @require_api_token
+@permission_classes([IsAuthenticated])
 def get_all_users_data(requests):
     
     clientes_data = []

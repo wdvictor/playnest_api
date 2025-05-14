@@ -1,7 +1,8 @@
 
 
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from api.auth_untils import require_api_token
 from base.models import  Customer
 from api.serializers import  RegisterSerializer, CustomerSerializer
@@ -56,6 +57,13 @@ def register_user(request):
             location=OpenApiParameter.HEADER,
             required=True,
             description="API authentication token"
+        ),
+         OpenApiParameter(
+            name="Authorization",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="User authentication token"
         )
     ],
     responses={
@@ -64,6 +72,7 @@ def register_user(request):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def add_user(request):
     serializer = CustomerSerializer(data=request.data)
@@ -84,6 +93,13 @@ def add_user(request):
             location=OpenApiParameter.HEADER,
             required=True,
             description="API authentication token"
+        ),
+        OpenApiParameter(
+            name="Authorization",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="User authentication token"
         )
     ],
     responses={
@@ -92,6 +108,7 @@ def add_user(request):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def get_all_users(request):
     try:
@@ -139,6 +156,7 @@ def get_all_users(request):
     },
 )
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 @require_api_token
 def delete_user(request, user_id):
     try:
@@ -166,6 +184,13 @@ def delete_user(request, user_id):
             location=OpenApiParameter.PATH,
             required=True,
             description="ID of the user to update"
+        ),
+        OpenApiParameter(
+            name="Authorization",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.HEADER,
+            required=True,
+            description="User authentication token"
         )
     ],
     responses={
@@ -174,6 +199,7 @@ def delete_user(request, user_id):
         404: OpenApiTypes.OBJECT,
     },
 )
+@permission_classes([IsAuthenticated])
 @api_view(['PUT'])
 @require_api_token
 def update_user(request, user_id):

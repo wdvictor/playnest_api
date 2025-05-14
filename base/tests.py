@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.tokens import RefreshToken
 import uuid
 from django.conf import settings
 from django.urls import reverse
@@ -17,12 +18,16 @@ class CustomerTestCase(APITestCase):
             self.user1 = User.objects.create_user(username=f'joao_{uuid.uuid4().hex[:6]}', email='joao@example.com', password='senha123')
             self.customer1 = Customer.objects.create(name="John Doe", details=self.details1, user=self.user1)
 
+
             self.details2 = Details.objects.create(email="jane@example.com", birthday=date(1995, 7, 20))
             self.user2 = User.objects.create_user(username=f'joao_{uuid.uuid4().hex[:6]}', email='marcos@example.com', password='senha123')
             self.customer2 = Customer.objects.create(name="marcos Smith", details=self.details2, user=self.user2)
 
+            self.token = RefreshToken.for_user(self.user1)
+
+
             self.url = reverse('get_all_users')
-            self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN)  # type: ignore
+            self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN, HTTP_AUTHORIZATION='Bearer ' + str(self.token.access_token))  # type: ignore
         except Exception as e:
             log_fail('[setUp]')
             log_warning('[Exception]: {}'.format(e))
@@ -97,11 +102,12 @@ class SaleTestCase(APITestCase):
     def setUp(self):
         try:
             self.user = User.objects.create_user(username=f'joao_{uuid.uuid4().hex[:6]}', password='senha123')   
+            self.token = RefreshToken.for_user(self.user)
             self.details = Details.objects.create(email='jonh.doe@gmail.com1', birthday=date(1990, 5, 10))
             self.customer = Customer.objects.create(name="John Doe", details=self.details, user=self.user)
             self.sale = Sale.objects.create(user_id=self.customer, date=date.today(), amount=100.0)
             self.url = reverse('add_sale')
-            self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN) # type: ignore
+            self.client.credentials(HTTP_X_API_KEY=settings.API_TOKEN, HTTP_AUTHORIZATION='Bearer ' + str(self.token.access_token)) # type: ignore
         except Exception as e:
             log_fail('[setUp]')
             log_warning('[Exception]: {}'.format(e))
